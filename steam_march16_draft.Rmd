@@ -1,0 +1,123 @@
+---
+title: "Tidy Tuesday, 03-16-2021"
+author: "Ingrid Zoll"
+date: "3/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, fig.align = 'center', echo=FALSE}
+knitr::include_graphics("geralt.jpg")
+```
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(tidytuesdayR)
+library(tidyverse)
+library(lubridate)
+library(hrbrthemes)
+library(ggdark)
+library(wesanderson)
+library(ggfx)
+```
+
+My boyfriend introduced me to The Witcher 
+
+```{r loading data, message=FALSE, warning=FALSE}
+# Get the Data
+tuesdata <- tidytuesdayR::tt_load('2021-03-16')
+games <- tuesdata$games
+```
+
+```{r witcher 1, message=FALSE, warning=FALSE}
+witcher <- games %>%
+  filter(gamename == c("The Witcher 3: Wild Hunt")) %>%
+  unite(yearmonth, month:year)%>%
+  mutate(date = my(yearmonth))
+
+release <- ymd("2019-12-20")
+label <- ymd("2019-02-01")
+
+ggplot(witcher, aes(x=date, y=avg))+
+  theme(legend.position = "bottom")+
+  scale_color_manual(name = 'Player Number \nMeasurement', values =c('gold'="#E1AF00",'skyblue3'="#78B7C5"), labels = c("Peak", "Average"))+
+  dark_theme_gray()+
+  geom_vline(aes(xintercept = release), color="grey95", linetype="dashed")+
+  labs(x="Date", y="Number of players at the same time")+
+  annotate(geom = "text", x = label, y = 75000, 
+  label = "Dec 20, 2019: Release of \n \"The Witcher\" TV show", color="grey94", size=3)+
+  geom_point(aes(y=peak, color="gold"))+
+  geom_line(aes(color="skyblue3"))+
+  labs(title="The Witcher 3: Wild Hunt", subtitle= "Average and peak player numbers per month")
+
+#"#3B9AB2" "#78B7C5" "#EBCC2A" "#E1AF00" "#F21A00"
+```
+```{r, message=FALSE, warning=FALSE}
+ggplot(witcher, aes(x=date, y=gain))+
+  theme(legend.position = "bottom")+
+  dark_theme_gray()+
+  geom_vline(aes(xintercept = release), color="grey95", linetype="dashed")+
+  labs(x="Date", y="Number of players at the same time")+
+  annotate(geom = "text", x = label, y = 25000, 
+  label = "Dec 20, 2019: Release of \n \"The Witcher\" TV show", color="grey94", size=3)+
+  geom_line(aes(y=avg), color="#EBCC2A")+
+  geom_col(aes(fill="gains"), fill="#3B9AB2")+
+  labs(title="The Witcher 3: Wild Hunt", subtitle="Average number of players at the same time with montly gains or losses")
+```
+
+```{r, message=FALSE, warning=FALSE}
+mostpop_bymonth <- games %>%
+  unite(yearmonth, month:year)%>%
+  mutate(date = my(yearmonth)) %>%
+  group_by(date)%>%
+  top_n(3, avg) %>%
+  ungroup %>%
+  add_count(gamename, name = "count") %>%
+  mutate(label = gamename, label = case_when(
+    count < 10 ~ "Other games",
+    count > 10 ~ gamename)) %>%
+  mutate(game = factor(label), game = fct_infreq(label)) %>%
+  mutate(game = str_replace(game, "PLAYERUNKNOWN'S BATTLEGROUNDS", "PUBG"), game = str_replace(game, "Counter-Strike: Global Offensive", "CS GO"))
+
+
+ggplot(mostpop_bymonth, aes(x=date, y=avg, fill=game))+
+  geom_col(position="stack")+
+  scale_fill_manual(values = wes_palette("Zissou1"))+
+  dark_theme_gray()+
+  labs(caption = "PUBG = PlayerUnknown's BattleGround \nCS GO = Counter-Strike: Global Offensive",
+       title= "Popular Games on Steam ")
+
+ggplot(mostpop_bymonth, aes(x=date, y=avg, fill=game))+
+  geom_col(position="dodge")+
+  scale_fill_manual(values = wes_palette("Zissou1"))+
+  dark_theme_gray() +
+  labs(caption = "PUBG = PlayerUnknown's BattleGround \nCS GO = Counter-Strike: Global Offensive",
+       title= "Popular Games on Steam ")
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+populargames <- games %>%
+  unite(yearmonth, month:year)%>%
+  mutate(date = my(yearmonth)) %>%
+  mutate(avg_peak_perc = str_replace(avg_peak_perc, "%$", ""), 
+         avg_peak_perc = as.numeric(avg_peak_perc)) %>%
+  filter(peak > 250000, avg > 100000)
+
+
+ggplot(populargames, aes(x=date, y=avg))+
+  scale_color_manual(name = 'Player Number \nMeasurement', values =c('Peak'="cyan",'Average'="hotpink"),
+                    labels = c("Average", "Peak"))+
+  geom_linerange(aes(ymax=peak, ymin=avg), color="gray80", size=.25)+
+  geom_point(aes(y=peak, color="Peak"), size=.3)+ geom_point(aes(y=avg, color="Average"), size=.3)+
+  with_outer_glow(geom_point(aes(y=peak, colour="Peak"),size=.3,color="white"),
+      colour="cyan", sigma=1, expand=.8)+
+  with_outer_glow(geom_point(size=.3,color="white"),
+      colour="hotpink", sigma=1, expand=.8)+
+  dark_theme_gray()+
+  labs(title="Averages and Peaks", y="Number of Players at the same time", x="Date", color="Measurement")
+```
+
