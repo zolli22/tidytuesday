@@ -1,0 +1,169 @@
+---
+title: "tidy tuesday march 23"
+author: "Ingrid Zoll"
+date: "3/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE)
+```
+
+```{r, message=FALSE}
+library(tidytuesdayR)
+library(tidyverse)
+library(viridis)
+library(rnaturalearth)
+library(sf)
+library(rgeos)
+library(lubridate)
+library(rockthemes)
+```
+
+```{r, message=FALSE}
+#loading in the data
+
+unvotes <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-23/unvotes.csv') %>%
+  mutate(country_code=ifelse(country=="Namibia","NA",country_code))
+roll_calls <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-23/roll_calls.csv')
+issues <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-23/issues.csv')
+
+```
+
+```{r, message=FALSE, fig.align='center', fig.width=10}
+important_votes <- roll_calls %>%
+  left_join(unvotes) %>%
+  left_join(issues) %>%
+  group_by(country, country_code, issue)%>%
+    summarise(perc_yes = sum(vote=="yes",na.rm=TRUE)/n(),
+            perc_no = sum(vote=="no",na.rm=TRUE)/n()) %>%
+  filter(!is.na(issue)) %>%
+  mutate(perc_yes_binned = case_when(perc_yes <= .2 ~ "0% - 20%",
+                               perc_yes > .2 & perc_yes <= .4 ~ "20% - 40%",
+                               perc_yes > .4 & perc_yes <= .6 ~ "40% - 60%",
+                               perc_yes > .6 & perc_yes <= .8 ~ "60% - 80%",
+                               perc_yes > .8 ~ "80% - 100%"))
+
+important_votes2 <- roll_calls %>% #same thing as above, but filtering for important votes!
+  filter(importantvote == 1) %>%
+  left_join(unvotes) %>%
+  left_join(issues) %>%
+  group_by(country, country_code, issue)%>%
+    summarise(perc_yes = sum(vote=="yes",na.rm=TRUE)/n(),
+            perc_no = sum(vote=="no",na.rm=TRUE)/n()) %>%
+  filter(!is.na(issue)) %>%
+  mutate(perc_yes_binned = case_when(perc_yes <= .2 ~ "0% - 20%",
+                               perc_yes > .2 & perc_yes <= .4 ~ "20% - 40%",
+                               perc_yes > .4 & perc_yes <= .6 ~ "40% - 60%",
+                               perc_yes > .6 & perc_yes <= .8 ~ "60% - 80%",
+                               perc_yes > .8 ~ "80% - 100%"))
+
+
+world <- ne_countries(scale = "small", returnclass = 'sf') %>%
+  filter(brk_name!="Antarctica") %>%
+  select(name,iso_a2,geometry) %>%
+  mutate(iso_a2=case_when(
+    name=="Norway" ~ "NO",
+    name=="France" ~ "FR",
+    name=="Namibia" ~ "NA",
+    TRUE ~ iso_a2
+    )
+  )
+
+world %>% 
+  right_join(important_votes,by=c("iso_a2"="country_code")) %>%
+  ggplot()+
+  geom_sf(aes(fill=perc_yes_binned),col=NA)+
+  facet_wrap(vars(issue), nrow=3)+
+  scale_fill_janelle()+
+  theme_classic()+
+  theme(axis.text = element_blank(), axis.ticks = element_blank())+
+  labs(fill = "Percent 'Yes' votes:", title= "Percent 'Yes' votes on all UN votes")+
+  ggsave("world.png")
+
+world %>% 
+  right_join(important_votes2,by=c("iso_a2"="country_code")) %>%
+  ggplot()+
+  geom_sf(aes(fill=perc_yes_binned),col=NA)+
+  facet_wrap(vars(issue), nrow=3)+
+  scale_fill_janelle()+
+  theme_classic()+
+  theme(axis.text = element_blank(), axis.ticks = element_blank())+
+  labs(fill = "Percent 'Yes' votes:", title= "Percent 'Yes' votes on 'important' UN votes")+
+  ggsave("world2.png")
+```
+
+```{r, fig.align='center', fig.width=10}
+big5 <- unvotes %>%
+  filter(country_code == "US" | country_code == "RU" | country_code == "FR" | 
+           country_code == "GB" | country_code == "CN") %>%
+  right_join(roll_calls) %>%
+  right_join(issues) %>%
+  filter(!is.na(vote)) %>%
+  filter(importantvote == 1) %>%
+  group_by(country, country_code, issue)%>%
+    summarise(yes = sum(vote=="yes",na.rm=TRUE),
+            no = sum(vote=="no",na.rm=TRUE)) %>%
+  pivot_longer(cols =c(yes, no), names_to="vote", values_to="prop")
+
+ggplot(big5, aes(x=country, y=prop, fill=vote))+
+  geom_col(position="fill")+
+  facet_wrap(vars(issue), nrow=3)+
+  coord_flip()+
+  scale_fill_janelle()+
+  theme_classic()+
+  labs(y="proportion of vote")+
+  ggsave("propvotes.png")
+```
+
+
+```{r, fig.align='center', fig.width=10}
+votes_overtime <- unvotes %>%
+  filter(country_code == "US" | country_code == "RU" | country_code == "FR" | 
+           country_code == "GB" | country_code == "CN") %>%
+  left_join(roll_calls) %>%
+  mutate(month = month(date), year = year(date))%>%
+  right_join(issues) %>%
+  group_by(country, country_code, issue, year)%>%
+  summarise(yes = sum(vote=="yes",na.rm=TRUE)/n(),
+            no = sum(vote=="no",na.rm=TRUE)/n()) %>%
+  pivot_longer(cols =c(yes, no), names_to="vote", values_to="prop") %>%
+  filter(year >= 2000) %>%
+  filter(vote == "yes")
+  
+ggplot(votes_overtime, aes(x=year, y=prop, color=country, shape=vote))+
+  geom_line(size=.75)+
+  facet_wrap(vars(issue), nrow=3)+
+  scale_color_janelle() +
+  theme_classic()+
+  labs(x="Year (2000-2019)", y="Proportion of 'Yes' votes", color="Country")+
+  ggsave("votes_line.png")+
+  theme(panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                colour = "gray"), 
+  panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                colour = "gray"))
+```
+```{r, eval=FALSE, include=FALSE}
+votes_overtime_important <- unvotes %>%
+  filter(country_code == "US" | country_code == "RU" | country_code == "FR" | 
+           country_code == "GB" | country_code == "CN") %>%
+  left_join(roll_calls) %>%
+  filter(importantvote == 1) %>%
+  mutate(month = month(date), year = year(date))%>%
+  right_join(issues) %>%
+  group_by(country, issue, year)%>%
+  summarise(yes = sum(vote=="yes",na.rm=TRUE)/n(),
+            no = sum(vote=="no",na.rm=TRUE)/n()) %>%
+  pivot_longer(cols =c(yes, no), names_to="vote", values_to="prop") %>%
+  filter(year >= 2000) %>%
+  filter(vote == "yes")
+
+
+ggplot(votes_overtime_important, aes(x=year, y=prop, color=country, shape=vote))+
+  geom_line()+
+  #facet_wrap(vars(issue))+
+  scale_color_floralShoppe() +
+  theme_bw()+
+  labs(x="Year (2000-2019)", y="Proportion of 'Yes' votes", color="Country")
+```
+

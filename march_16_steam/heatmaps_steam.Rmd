@@ -1,0 +1,64 @@
+---
+title: "take2"
+author: "Ingrid Zoll"
+date: "3/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidytuesdayR)
+library(tidyverse)
+library(lubridate)
+library(viridis)
+```
+
+
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2021-03-16')
+games <- tuesdata$games %>%
+  mutate(year=as.character(year)) 
+
+pop_time <- games %>%
+  mutate(year=as.character(year)) %>%
+  mutate(month = as_factor(x=month)) %>%
+  mutate(month = fct_relevel(month, c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")), month = fct_rev(month)) %>%
+  group_by(year, month)%>%
+  summarize(avg2 = mean(avg), avg_peak= mean(peak)) %>%
+  mutate(month_raw = month, year_raw = year) %>%
+  unite(yearmonth, month:year)%>%
+  mutate(date = my(yearmonth))
+
+```
+
+```{r}
+ggplot(data=pop_time, aes(x=year_raw, y=month_raw))+
+  geom_raster(aes(fill=avg_peak))+
+  scale_fill_viridis(option="plasma")+
+  theme_classic()
+
+ggplot(data=pop_time, aes(x=year_raw, y=month_raw))+
+  geom_tile(aes(fill=avg2))+
+  scale_fill_viridis(option="plasma")+
+  theme_classic()
+
+ggplot(pop_time, aes(x=date, y=avg_peak))+
+  geom_col(aes(fill=avg_peak))+
+  scale_fill_viridis(option="plasma")+
+  theme_classic()
+
+ggplot(pop_time, aes(x=date, y=avg2))+
+  geom_col(aes(fill=avg2))+
+  scale_fill_viridis(option="plasma")+
+  theme_classic()
+
+ggplot(pop_time, aes(x=date))+
+  geom_line(aes(y=avg2))+
+  geom_line(aes(y=avg_peak))
+```
+
