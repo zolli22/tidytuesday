@@ -30,7 +30,7 @@ issues <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tid
 
 ```
 
-```{r, message=FALSE, fig.align='center', fig.width=10}
+```{r, message=FALSE, fig.align='center'}
 important_votes <- roll_calls %>%
   left_join(unvotes) %>%
   left_join(issues) %>%
@@ -93,7 +93,7 @@ world %>%
   ggsave("world2.png")
 ```
 
-```{r, fig.align='center', fig.width=10}
+```{r, fig.align='center'}
 big5 <- unvotes %>%
   filter(country_code == "US" | country_code == "RU" | country_code == "FR" | 
            country_code == "GB" | country_code == "CN") %>%
@@ -117,7 +117,7 @@ ggplot(big5, aes(x=country, y=prop, fill=vote))+
 ```
 
 
-```{r, fig.align='center', fig.width=10}
+```{r, fig.align='center'}
 votes_overtime <- unvotes %>%
   filter(country_code == "US" | country_code == "RU" | country_code == "FR" | 
            country_code == "GB" | country_code == "CN") %>%
@@ -143,6 +143,7 @@ ggplot(votes_overtime, aes(x=year, y=prop, color=country, shape=vote))+
   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
                                 colour = "gray"))
 ```
+
 ```{r, eval=FALSE, include=FALSE}
 votes_overtime_important <- unvotes %>%
   filter(country_code == "US" | country_code == "RU" | country_code == "FR" | 
