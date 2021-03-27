@@ -36,6 +36,7 @@ this is a place where i will put links, tweets, resources, and other things i se
 - [pop themes](https://github.com/johnmackintosh/popthemes)
 - [vape plot](https://github.com/seasmith/vapeplot)
 - [sf themes](https://github.com/amirmasoudabdol/sfthemes)
+- [percy jackson](https://github.com/MaiaPelletier/pjocolours)
 
 ## tweets
 
