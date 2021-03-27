@@ -79,7 +79,7 @@ world %>%
   theme_classic()+
   theme(axis.text = element_blank(), axis.ticks = element_blank())+
   labs(fill = "Percent 'Yes' votes:", title= "Percent 'Yes' votes on all UN votes")+
-  ggsave("world.png")
+  ggsave("figures/world.png")
 
 world %>% 
   right_join(important_votes2,by=c("iso_a2"="country_code")) %>%
@@ -90,7 +90,7 @@ world %>%
   theme_classic()+
   theme(axis.text = element_blank(), axis.ticks = element_blank())+
   labs(fill = "Percent 'Yes' votes:", title= "Percent 'Yes' votes on 'important' UN votes")+
-  ggsave("world2.png")
+  ggsave("figures/world2.png")
 ```
 
 ```{r, fig.align='center'}
@@ -113,7 +113,7 @@ ggplot(big5, aes(x=country, y=prop, fill=vote))+
   scale_fill_janelle()+
   theme_classic()+
   labs(y="proportion of vote")+
-  ggsave("propvotes.png")
+  ggsave("figures/propvotes.png")
 ```
 
 
@@ -137,7 +137,7 @@ ggplot(votes_overtime, aes(x=year, y=prop, color=country, shape=vote))+
   scale_color_janelle() +
   theme_classic()+
   labs(x="Year (2000-2019)", y="Proportion of 'Yes' votes", color="Country")+
-  ggsave("votes_line.png")+
+  ggsave("figures/votes_line.png")+
   theme(panel.grid.major = element_line(size = 0.25, linetype = 'solid',
                                 colour = "gray"), 
   panel.grid.minor = element_line(size = 0.25, linetype = 'solid',

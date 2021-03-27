@@ -53,7 +53,8 @@ ggplot(mostpop_bymonth, aes(x=date, y=avg, fill=game))+
   dark_theme_gray()+
   labs(caption = "PUBG = PlayerUnknown's BattleGround \nCS GO = Counter-Strike: Global Offensive",
        title= "The Three Most Popular Games on Steam by Month", 
-       y="Average number of players at the same time", x="Date")
+       y="Average number of players at the same time", x="Date")+
+  ggsave("figures/mostpop_bymonth.png")
 ```
 First thought: Wow, this looks cool!
 Second thought: but.... not a great way to show the data. Sigh.
@@ -65,7 +66,8 @@ ggplot(mostpop_bymonth, aes(x=date, y=avg, fill=game))+
   dark_theme_gray() +
   labs(caption = "PUBG = PlayerUnknown's BattleGround \nCS GO = Counter-Strike: Global Offensive",
        title= "The Three Most Popular Games on Steam by Month", 
-       y="Average number of players at the same time", x="Date")
+       y="Average number of players at the same time", x="Date")+
+  ggsave("figures/mostpop2.png")
 ```
 What about... dodging them? Still cool looking, but still not an effective visualization. This graph does start to show us some patterns- PUBG was an insanely popular game in 2017 and 2018, dwarfing CS GO and Dota 2 (which were the most popular games by A LOT). So I wanted to take a closer look at these three games. 
 
@@ -82,7 +84,8 @@ ggplot(populargames, aes(x=date, y=avg))+
   geom_linerange(aes(ymax=peak, ymin=avg, color=game), size=.25)+
   geom_point(aes(y=peak, color=game), size=.7)+
   geom_point(aes(y=avg, color=game), size=.7)+
-  labs(title="Three Most Popular Games", x="Date", y="Number of players")
+  labs(title="Three Most Popular Games", x="Date", y="Number of players")+
+  ggsave("figures/topthree.png")
 ```
 Here we have the averages and peaks for number of players for the three most popular games on Steam. And yes- PUBG really did dwarf Dota 2 and CS GO, only a few months after it was released. 
 
@@ -112,7 +115,8 @@ ggplot(witcher, aes(x=date, y=avg))+
   label = "Dec 20, 2019: Release of \n \"The Witcher\" TV show", color="grey94", size=3)+
   geom_point(aes(y=peak, color="gold"))+
   geom_line(aes(color="skyblue3"))+
-  labs(title="The Witcher 3: Wild Hunt", subtitle= "Average and peak player numbers per month")
+  labs(title="The Witcher 3: Wild Hunt", subtitle= "Average and peak player numbers per month")+
+  ggsave("figures/witcher1.png")
 ```
 
 Initially when I looked at this graph, I noticed a few things: first, the massive spike in activity in late 2019/early 2020, and the smaller (but still notable) spike in the summer of 2016. The larger spike can be attributed to the release of The Witcher TV show on netflix, but the smaller peak took me longer to figure out. Steam has an annual summer sale, and by best guess is that the game went on sale in the summer of 2016, so many new players bought it and started to play. 
@@ -127,7 +131,8 @@ ggplot(witcher, aes(x=date, y=gain))+
   label = "Dec 20, 2019: Release of \n \"The Witcher\" TV show", color="grey94", size=3)+
   geom_line(aes(y=avg), color="#EBCC2A")+
   geom_col(aes(fill="gains"), fill="#3B9AB2")+
-  labs(title="The Witcher 3: Wild Hunt", subtitle="Average number of players at the same time with montly gains or losses")
+  labs(title="The Witcher 3: Wild Hunt", subtitle="Average number of players at the same time with montly gains or losses")+
+  ggsave("figures/witcher3.png")
 ```
 
 Lastly, I wanted to look at the gains (and losses) of player activity. There's nothing too interesting in this graph, but I thought it added another cool visualization to this post. 
