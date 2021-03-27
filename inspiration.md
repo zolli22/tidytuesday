@@ -16,7 +16,10 @@ this is a place where i will put links, tweets, resources, and other things i se
 
 
 ## color palettes
-- [full list](https://github.com/EmilHvitfeldt/r-color-palettes/blob/master/type-sorted-palettes.md)
+- [paletteer](https://github.com/EmilHvitfeldt/paletteer)
+  - [full list](https://github.com/EmilHvitfeldt/r-color-palettes/blob/master/type-sorted-palettes.md)
+- [lisa](https://github.com/tyluRp/lisa)
+  - [color lisa](http://colorlisa.com)
 - [game of thrones](https://github.com/aljrico/gameofthrones)
 - [nord](https://github.com/arcticicestudio/nord)
 - [dutch masters](https://github.com/EdwinTh/dutchmasters)
@@ -31,6 +34,8 @@ this is a place where i will put links, tweets, resources, and other things i se
 - [wes anderson](https://github.com/karthik/wesanderson)
 - [rock themes](https://github.com/johnmackintosh/rockthemes)
 - [pop themes](https://github.com/johnmackintosh/popthemes)
+- [vape plot](https://github.com/seasmith/vapeplot)
+- [sf themes](https://github.com/amirmasoudabdol/sfthemes)
 
 ## tweets
 
