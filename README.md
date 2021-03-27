@@ -1,8 +1,6 @@
 # ingrid's tidy tuesday repo
 
 this repo is for all things **tidy tuesday** related 🌸
-![image](https://user-images.githubusercontent.com/60718623/112706206-ea5e0680-8e5f-11eb-98a0-500fc47fc9ce.png)
-![image](https://user-images.githubusercontent.com/60718623/112706207-eb8f3380-8e5f-11eb-81bd-3a3c27a5568f.png)
 
 these visualizations (and more) can also be seen [on my website](http://itlzoll.rbind.io/post/)
 
