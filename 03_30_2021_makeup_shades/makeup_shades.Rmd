@@ -1,0 +1,182 @@
+---
+title: "tidytuesday march 30- makeup shades"
+date: "3/30/2021"
+author: "Ingrid Zoll"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, message=FALSE}
+library(tidyverse)
+library(ggraph)
+library(igraph)
+library(stringr)
+```
+
+```{r loading data, echo=FALSE, message=FALSE}
+#sephora <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/sephora.csv')
+#ulta <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/ulta.csv')
+allCategories <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/allCategories.csv')
+#allShades <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/allShades.csv')
+#allNumbers <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/allNumbers.csv')
+```
+
+```{r}
+gems <- allCategories %>%
+  filter(str_detect(categories, "gem")) %>%
+  distinct(brand, name, lightness, hex) %>%
+  mutate(name_group = case_when(str_detect(name, "ivory") ~ "ivory",
+                                str_detect(name, "ivoire") ~ "ivory",
+                                str_detect(name, "amber") ~ "amber",
+                                str_detect(name, "alabaster") ~ "alabaster",
+                                str_detect(name, "shell") ~ "shell",
+                                str_detect(name, "pearl") ~ "pearl",
+                                str_detect(name, "bone") ~ "bone", 
+                                TRUE ~ "other")) %>%
+  mutate(category = "gem")
+
+
+rocks <- allCategories %>%
+  filter(str_detect(categories, "rock")) %>%
+  distinct(brand, name, lightness, hex)  %>%
+  mutate(name_group = case_when(str_detect(name, "sand") ~ "sand",
+                                str_detect(name, "sienna") ~ "sienna",
+                                str_detect(name, "desert") ~ "desert",
+                                str_detect(name, "pebble") ~ "stone/pebble",
+                                str_detect(name, "dune") ~ "dune",
+                                str_detect(name, "stone") ~ "stone/pebble",
+                                TRUE ~ "other")) %>%
+  mutate(category = "rock")
+
+
+full_data <- rocks %>%
+  full_join(gems)
+
+full_count<-full_data %>%
+  group_by(category, name_group) %>%
+  count(name_group) %>%
+  mutate(lightness = 0.25)
+```
+
+
+
+```{r violin minerals chart}
+full_shades <- full_data$hex
+
+ggplot(full_data, aes(x=name_group, y=lightness))+
+  geom_violin(color="black", fill=NA, size=.2)+
+  geom_point(shape=21, fill=full_shades, size=2, position="jitter", stroke=.3, alpha=.9)+
+  facet_grid(vars(category), scales="free")+
+  geom_label(data=full_count, aes(label=n), size=2.5)+
+  coord_flip()+
+  labs(x="name group", title="minerals in makeup", subtitle="rock and gem categorized makeup names and their shades")+
+  theme_minimal()+
+  ggsave("violin_dot_makeup.png")
+```
+
+```{r hierarchy plots, eval=FALSE, include=FALSE}
+covergirl <- allCategories %>%
+  filter(brand == "CoverGirl")
+
+set1a <- covergirl %>%
+  select(1:2) %>%
+  distinct() %>%
+  rename("from" = "brand", "to" = "product")
+
+set2a <- covergirl %>%
+  select(product, name)%>%
+  rename("from" = "product", "to"="name")
+
+hierarchy_1 <- rbind(set1a, set2a)
+
+vertices_1 <- data.frame(name = unique(c(as.character(hierarchy_1$from), as.character(hierarchy_1$to))) ) 
+
+mygraph_1 <- graph_from_data_frame(hierarchy_1, vertices=vertices_1)
+
+
+plot(mygraph_1, vertex.label="", edge.arrow.size=0, vertex.size=2, mark.col="blue")
+
+ggraph(mygraph_1, layout = 'dendrogram', circular = TRUE) + 
+  geom_edge_diagonal() +
+  theme_void()
+
+ggraph(mygraph_1, layout = 'circlepack') + 
+  geom_node_circle() +
+  theme_void()
+
+ggraph(mygraph_1, layout='dendrogram', circular=FALSE) + 
+  geom_edge_diagonal() +
+  theme_void() +
+  theme(legend.position="none")
+
+ggraph(mygraph_1, 'partition', circular = TRUE) + 
+  geom_node_arc_bar(aes(fill = depth), size = 0.25) +
+  theme_void() +
+  theme(legend.position="none")
+
+ggraph(mygraph_1) + 
+  geom_edge_link() + 
+  geom_node_point() +
+  theme_void() +
+  theme(legend.position="none")
+
+```
+
+set1 - 5 of 2
+set 2 - 84 of 2
+hierarchy - 89 of 2
+vertices - 72 of 1
+
+
+
+```{r, message=FALSE}
+smallbrands <- count(full_data, brand) %>%
+  arrange(desc(n)) %>%
+  sample_n(10)
+
+brandlist <- smallbrands$brand
+
+full_data2 <- full_data %>%
+  filter(brand %in% c(brandlist)) %>%
+  mutate(origin = "origin")
+
+set1b <- full_data2 %>%
+  select(origin, brand) %>%
+  distinct() %>%
+  rename("from"="origin", "to"="brand")
+
+set2b <- full_data2 %>%
+  select(brand, name_group) %>%
+  rename("from" = "brand", "to"="name_group")
+
+set3b <- full_data2 %>%
+  select(name_group, name) %>%
+  rename("from"="name_group", "to"="name")
+
+hierarchy_2 <- rbind(set1b, set2b, set3b)
+
+vertices_2 <- data.frame(name = unique(c(as.character(hierarchy_2$from), as.character(hierarchy_2$to))) ) 
+
+mygraph_2 <- graph_from_data_frame( hierarchy_2, vertices=vertices_2)
+
+```
+
+
+```{r}
+
+ggraph(mygraph_2, layout = 'circlepack') + 
+  geom_node_circle(aes(fill = depth)) +
+  scale_fill_distiller(palette = "RdPu") +
+  theme_void()
+
+ggraph(mygraph_2, layout='dendrogram', circular=FALSE) + 
+  geom_edge_diagonal() +
+  theme_void() +
+  #geom_node_label(aes(label=))+
+  theme(legend.position="none")
+  
+```
+

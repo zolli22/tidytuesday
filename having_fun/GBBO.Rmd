@@ -1,0 +1,50 @@
+---
+title: "bakeoff data"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libraries}
+library(bakeoff)
+library(tidyverse)
+library(paletteer)
+```
+
+
+```{r pressure, echo=FALSE}
+baker_results <- baker_results
+bakers <- bakers
+#bakes <- bakes   ##seems like an outdated version of episodes
+challenge_results <- challenge_results
+episode_results <- episode_results
+episodes <- episodes
+ratings <- ratings
+ratings_seasons <- ratings_seasons
+results <- results
+seasons <- seasons
+series <- series
+#spice_test_wide <- spice_test_wide
+week_themes <- read_csv("week_themes.csv")
+
+episode_themes <- week_themes %>%
+  select(1:3) %>%
+  saveRDS("episode_themes.rda")
+
+```
+
+```{r}
+star_bakers <- challenge_results %>%
+  filter(result == "STAR BAKER")
+
+series_2 <- series %>%
+  pivot_longer(cols=c(winner, runner_up_1, runner_up_2), names_to = "placement", values_to = "baker_full") %>%
+  select(series, placement, baker_full) %>%
+  mutate(baker_full = str_replace(baker_full, "Edd Kimber", 'Edward "Edd" Kimber'), 
+         baker_full = str_replace(baker_full, "Joanne Wheatley", 'Joanne "Jo" Wheatley')) %>%
+  left_join(bakers, by=c("baker_full", "series"))
+```
+
