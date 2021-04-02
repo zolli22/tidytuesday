@@ -1,0 +1,77 @@
+---
+title: "makeup draft code"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libraries, message=FALSE}
+library(tidyverse)
+library(ggraph)
+library(igraph)
+library(stringr)
+```
+
+```{r loading data, echo=FALSE, message=FALSE}
+#sephora <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/sephora.csv')
+#ulta <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/ulta.csv')
+allCategories <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/allCategories.csv')
+#allShades <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/allShades.csv')
+#allNumbers <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/allNumbers.csv')
+```
+
+
+
+```{r hierarchy plots, eval=FALSE, include=FALSE}
+
+##DIDN"T USE THIS CODE
+
+covergirl <- allCategories %>%
+  filter(brand == "CoverGirl")
+
+set1a <- covergirl %>%
+  select(1:2) %>%
+  distinct() %>%
+  rename("from" = "brand", "to" = "product")
+
+set2a <- covergirl %>%
+  select(product, name)%>%
+  rename("from" = "product", "to"="name")
+
+hierarchy_1 <- rbind(set1a, set2a)
+
+vertices_1 <- data.frame(name = unique(c(as.character(hierarchy_1$from), as.character(hierarchy_1$to))) ) 
+
+mygraph_1 <- graph_from_data_frame(hierarchy_1, vertices=vertices_1)
+
+
+plot(mygraph_1, vertex.label="", edge.arrow.size=0, vertex.size=2, mark.col="blue")
+
+ggraph(mygraph_1, layout = 'dendrogram', circular = TRUE) + 
+  geom_edge_diagonal() +
+  theme_void()
+
+ggraph(mygraph_1, layout = 'circlepack') + 
+  geom_node_circle() +
+  theme_void()
+
+ggraph(mygraph_1, layout='dendrogram', circular=FALSE) + 
+  geom_edge_diagonal() +
+  theme_void() +
+  theme(legend.position="none")
+
+ggraph(mygraph_1, 'partition', circular = TRUE) + 
+  geom_node_arc_bar(aes(fill = depth), size = 0.25) +
+  theme_void() +
+  theme(legend.position="none")
+
+ggraph(mygraph_1) + 
+  geom_edge_link() + 
+  geom_node_point() +
+  theme_void() +
+  theme(legend.position="none")
+
+```

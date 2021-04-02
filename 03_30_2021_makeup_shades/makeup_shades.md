@@ -1,31 +1,28 @@
----
-title: "tidytuesday march 30- makeup shades"
-date: "3/30/2021"
-author: "Ingrid Zoll"
-output: github_document
----
+tidytuesday march 30- makeup shades
+================
+Ingrid Zoll
+3/30/2021
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+This week’s tidy tuesday provided makeup shade data, which was
+interesting and challenging to work with! With the given name
+categorizations, I decided to take a closer look at makeup names that
+were categorized as either rocks or gems, the common names within those
+groups, and their shades.
 
-
-This week's tidy tuesday provided makeup shade data, which was interesting and challenging to work with! With the given name categorizations, I decided to take a closer look at makeup names that were categorized as either rocks or gems, the common names within those groups, and their shades.
-
-```{r libraries, message=FALSE}
+``` r
 library(tidyverse)
 library(ggraph)
 library(igraph)
 library(stringr)
 ```
 
-```{r loading data, message=FALSE}
+``` r
 allCategories <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/allCategories.csv')
 ```
 
+First, data wrangling!
 
-First, data wrangling! 
-```{r}
+``` r
 gems <- allCategories %>%
   filter(str_detect(categories, "gem")) %>%
   distinct(brand, name, lightness, hex) %>%
@@ -54,16 +51,20 @@ rocks <- allCategories %>%
 
 full_data <- rocks %>%
   full_join(gems)
+```
 
+    ## Joining, by = c("brand", "name", "hex", "lightness", "name_group", "category")
+
+``` r
 full_count<-full_data %>%
   group_by(category, name_group) %>%
   count(name_group) %>%
   mutate(lightness = 0.25)
 ```
 
-
 Now, some graphing!
-```{r violin minerals chart, message=FALSE}
+
+``` r
 full_shades <- full_data$hex
 
 ggplot(full_data, aes(x=name_group, y=lightness))+
@@ -77,16 +78,18 @@ ggplot(full_data, aes(x=name_group, y=lightness))+
   ggsave("violin_dot_makeup.png")
 ```
 
-
+![](makeup_shades_files/figure-gfm/violin%20minerals%20chart-1.png)<!-- -->
 
 Lastly, some fun with hierarchy plots!  
 Nodes are:  
 1. brand (10 randomly selected)  
 2. name group (as created in the above wrangling)  
-3. makeup name  
+3. makeup name
 
-I'm still getting the hang of using `ggraph` so these aren't the best graphs, but I had a lot of fun making them! 
-```{r, message=FALSE}
+I’m still getting the hang of using `ggraph` so these aren’t the best
+graphs, but I had a lot of fun making them!
+
+``` r
 smallbrands <- count(full_data, brand) %>%
   arrange(desc(n)) %>%
   sample_n(10)
@@ -94,7 +97,7 @@ smallbrands <- count(full_data, brand) %>%
 brandlist <- smallbrands$brand
 ```
 
-```{r}
+``` r
 full_data2 <- full_data %>%
   filter(brand %in% c(brandlist)) %>%
   mutate(origin = "origin")
@@ -117,16 +120,20 @@ vertices <- data.frame(name = unique(c(as.character(hierarchy$from), as.characte
 mygraph <- graph_from_data_frame( hierarchy, vertices=vertices)
 ```
 
-
-```{r, message=FALSE}
+``` r
 ggraph(mygraph, layout='dendrogram', circular=FALSE) + 
   geom_edge_diagonal() +
   theme_void() +
   theme(legend.position="none")
+```
 
+![](makeup_shades_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
 ggraph(mygraph, layout = 'circlepack') + 
   geom_node_circle(aes(fill = depth)) +
   scale_fill_distiller(palette = "RdPu") +
   theme_void()
 ```
 
+![](makeup_shades_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
