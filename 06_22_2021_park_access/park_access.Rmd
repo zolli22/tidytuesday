@@ -1,0 +1,54 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+
+```
+
+
+```{r}
+parks <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-22/parks.csv')
+```
+
+
+```{r}
+cities <- c("Minneapolis", "Chicago", "San Francisco", "New York", "Boston", "Seattle")
+
+myparks <- parks %>% 
+  filter(city %in% cities) %>%
+  mutate(spend_per_resident_data = sub(".", "", spend_per_resident_data), spend_per_resident_data = as.numeric(spend_per_resident_data))
+
+parks <- parks %>% 
+  mutate(spend_per_resident_data = sub(".", "", spend_per_resident_data), spend_per_resident_data = as.numeric(spend_per_resident_data))
+
+```
+
+```{r}
+ggplot(myparks, aes(x=year, y=playground_data, color=city))+
+  geom_point()+
+  geom_bump()+
+  theme_solarized()+
+  scale_colour_solarized('blue')+
+  labs(y="playgrounds per 10,000 residents")
+
+ggplot(myparks, aes(x=year, y=spend_per_resident_data, color=city))+
+  geom_point()+
+  geom_bump()+
+  theme_solarized()+
+  scale_colour_solarized('blue')+
+  labs(y="playgrounds per 10,000 residents")
+
+
+ggplot(parks, aes(y=playground_data, x=spend_per_resident_data))+
+  geom_point()+
+  #geom_bump()+
+  theme_solarized()+
+  scale_colour_solarized('blue')+
+  labs(y="playgrounds per 10,000 residents")
+  
+```
+

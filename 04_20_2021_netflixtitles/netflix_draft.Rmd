@@ -1,0 +1,52 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r libraries, message=FALSE}
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r, message=FALSE}
+netflix_titles <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-20/netflix_titles.csv')
+```
+
+```{r}
+kids <- c("TV-Y", "TV-Y7", "TV-Y7-FV", "G", "PG", "TV-G", "TV-PG")
+teens <- c("PG-13", "TV-14")
+adults <- c("R", "NC-17", "TV-MA")
+no_rating <- c("NA", "NR", "UR")
+```
+
+
+```{r}
+netflix <- netflix_titles %>%
+  select(1, 2, 6:9) %>%
+  mutate(maturity_rating = case_when(rating %in% kids ~ "kids",
+                                     rating %in% teens ~ "teens",
+                                     rating %in% adults ~ "adults"), 
+         maturity_rating= factor(x=maturity_rating, levels=c("kids", "teens", "adults"))) %>%
+  mutate(date_added = mdy(date_added), month = quarter(date_added), year = year(date_added)) %>% 
+  filter(!is.na(maturity_rating), year > 2015, year < 2021) %>%
+  unite("month_year", year:month) %>%
+  mutate(month_year = lubridate::yq(month_year)) %>%
+  count(month_year, maturity_rating)
+```
+
+```{r}
+ggplot(netflix, aes(x=month_year, y=n, fill=maturity_rating))+
+  geom_col(position="dodge")+
+  theme_minimal()+
+  scale_fill_manual(values=c("#355070", "#b56576", "#eaac8b"))+
+  labs(x="quarterly additions", y="count", fill="maturity rating")
+  
+```
+
+```{r}
+info_paletteer(color_pkgs = NULL)
+```
+
